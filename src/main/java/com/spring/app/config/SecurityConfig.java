@@ -48,11 +48,12 @@ public class SecurityConfig {
 
         String[] publicUris = {
             "/notice/list", "/notice/view", "/notice/faq",
-            "/inquiry/list", "/inquiry/write",
+            "/inquiry/list", "/inquiry/write", "/inquiry/admin/api",
             "/index", "/favicon.ico"
         };
 
-        http.authorizeHttpRequests(auth -> auth
+        http.csrf(csrf -> csrf.disable())
+        .authorizeHttpRequests(auth -> auth
             .dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR).permitAll()
             .requestMatchers(publicUris).permitAll()
             .requestMatchers("/admin/**").hasRole("ADMIN")
@@ -65,7 +66,7 @@ public class SecurityConfig {
             .accessDeniedHandler(customAccessDeniedHandler())
         )
         .headers(h -> h.frameOptions(f -> f.sameOrigin()))
-        .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+        .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .logout(logout -> logout
             .logoutUrl("/auth/logout")
             .addLogoutHandler((req, res, auth) -> {

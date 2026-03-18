@@ -38,5 +38,28 @@
 
 <script defer th:src="@{/finalProject_3/js/header.js}"></script>
 <script th:src="@{/finalProject_3/bootstrap-4.6.2-dist/js/bootstrap.bundle.min.js}"></script>
+
+<script>
+  // 쿠키 → localStorage 동기화
+  (function syncJwt() {
+    const cookie = document.cookie.split(';')
+      .map(c => c.trim())
+      .find(c => c.startsWith('accessToken='));
+    if (cookie) {
+      const token = cookie.split('=')[1];
+      localStorage.setItem('accessToken', token);
+    }
+  })();
+
+  // fetch 전역 인터셉터: Authorization 헤더 자동 추가
+  const _origFetch = window.fetch;
+  window.fetch = function(input, init = {}) {
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+      init.headers = Object.assign({ 'Authorization': 'Bearer ' + token }, init.headers || {});
+    }
+    return _origFetch(input, init);
+  };
+</script>
 </body>
 </html>

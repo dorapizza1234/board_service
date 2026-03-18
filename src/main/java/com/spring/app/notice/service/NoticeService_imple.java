@@ -4,9 +4,14 @@ import com.spring.app.entity.Notice;
 import com.spring.app.notice.domain.NoticeDTO;
 import com.spring.app.notice.repository.NoticeRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -60,6 +65,47 @@ public class NoticeService_imple implements NoticeService {
             n.setIsDeleted("Y");
             noticeRepository.save(n);
         });
+    }
+
+    @Override
+    public Map<String, Object> getPagedNoticeList(int page, int size) {
+        Pageable pageable = PageRequest.of(page - 1, size);
+        Page<Notice> pageResult = noticeRepository
+            .findByNoticeTypeAndIsDeletedOrderByImportanceDescCreatedAtDesc("NOTICE", "N", pageable);
+        return buildPageResult(pageResult, page);
+    }
+
+    @Override
+    public Map<String, Object> getPagedFaqList(int page, int size) {
+        Pageable pageable = PageRequest.of(page - 1, size);
+        Page<Notice> pageResult = noticeRepository
+            .findByNoticeTypeAndIsDeletedOrderByImportanceDescCreatedAtDesc("FAQ", "N", pageable);
+        return buildPageResult(pageResult, page);
+    }
+
+    @Override
+    public Map<String, Object> getPagedAllNotices(int page, int size) {
+        Pageable pageable = PageRequest.of(page - 1, size);
+        Page<Notice> pageResult = noticeRepository
+            .findByIsDeletedOrderByImportanceDescCreatedAtDesc("N", pageable);
+        return buildPageResult(pageResult, page);
+    }
+
+    @Override
+    public NoticeDTO getNoticeForEdit(Long noticeId) {
+        return noticeRepository.findByNoticeIdAndIsDeleted(noticeId, "N")
+            .map(this::toDTO)
+            .orElseThrow(() -> new RuntimeException("공지사항이 없습니다."));
+    }
+
+    private Map<String, Object> buildPageResult(Page<Notice> pageResult, int page) {
+        List<NoticeDTO> list = pageResult.getContent().stream().map(this::toDTO).collect(Collectors.toList());
+        Map<String, Object> result = new HashMap<>();
+        result.put("list", list);
+        result.put("total", pageResult.getTotalElements());
+        result.put("totalPages", pageResult.getTotalPages() == 0 ? 1 : pageResult.getTotalPages());
+        result.put("currentPage", page);
+        return result;
     }
 
     private NoticeDTO toDTO(Notice n) {

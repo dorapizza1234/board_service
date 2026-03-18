@@ -42,6 +42,22 @@
         </tbody>
     </table>
 
+    <!-- 공지사항 페이징 -->
+    <nav th:if="${totalPages > 1}" aria-label="Notice page navigation">
+        <ul class="pagination justify-content-center">
+            <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
+                <a class="page-link" th:href="@{/board-service/notice/list(page=${currentPage-1})}">이전</a>
+            </li>
+            <li class="page-item" th:each="p : ${#numbers.sequence(1, totalPages)}"
+                th:classappend="${p == currentPage} ? 'active'">
+                <a class="page-link" th:href="@{/board-service/notice/list(page=${p})}" th:text="${p}"></a>
+            </li>
+            <li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled'">
+                <a class="page-link" th:href="@{/board-service/notice/list(page=${currentPage+1})}">다음</a>
+            </li>
+        </ul>
+    </nav>
+
     <hr class="my-5">
 
     <!-- FAQ 섹션 -->

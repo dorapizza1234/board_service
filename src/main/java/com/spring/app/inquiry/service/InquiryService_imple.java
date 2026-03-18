@@ -4,10 +4,15 @@ import com.spring.app.entity.Inquiry;
 import com.spring.app.inquiry.domain.InquiryDTO;
 import com.spring.app.inquiry.repository.InquiryRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -54,6 +59,24 @@ public class InquiryService_imple implements InquiryService {
             i.setInquiryStatus("답변완료");
             inquiryRepository.save(i);
         });
+    }
+
+    @Override
+    public Map<String, Object> getPagedInquiries(int page, int size, String status) {
+        Pageable pageable = PageRequest.of(page - 1, size);
+        Page<Inquiry> pageResult;
+        if (status == null || status.isEmpty() || "ALL".equals(status)) {
+            pageResult = inquiryRepository.findAllByOrderByCreatedAtDesc(pageable);
+        } else {
+            pageResult = inquiryRepository.findByInquiryStatusOrderByCreatedAtDesc(status, pageable);
+        }
+        List<InquiryDTO> list = pageResult.getContent().stream().map(this::toDTO).collect(Collectors.toList());
+        Map<String, Object> result = new HashMap<>();
+        result.put("list", list);
+        result.put("total", pageResult.getTotalElements());
+        result.put("totalPages", pageResult.getTotalPages() == 0 ? 1 : pageResult.getTotalPages());
+        result.put("currentPage", page);
+        return result;
     }
 
     private InquiryDTO toDTO(Inquiry i) {
