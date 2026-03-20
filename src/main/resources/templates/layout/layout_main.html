@@ -8,21 +8,30 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <title th:replace="${title}">Board Service</title>
 
+  <!-- SockJS / Stomp (실시간 알림) -->
+  <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+  <!-- Bootstrap -->
+  <link rel="stylesheet" th:href="@{/finalProject_3/bootstrap-4.6.2-dist/css/bootstrap.min.css}">
 
   <!-- finalProject_3 공통 CSS (게이트웨이 통해 서빙) -->
   <link rel="stylesheet" th:href="@{/finalProject_3/css/header.css}">
   <link rel="stylesheet" th:href="@{/finalProject_3/css/footer.css}">
 
-  <!-- Bootstrap -->
-  <link rel="stylesheet" th:href="@{/finalProject_3/bootstrap-4.6.2-dist/css/bootstrap.min.css}">
-
   <!-- jQuery -->
   <script th:src="@{/finalProject_3/js/jquery-3.7.1.min.js}"></script>
 
   <script>
-    function toggleChatPopup() {}
+    function toggleChatPopup() {
+      const modal = document.getElementById('chatModal');
+      if (modal) {
+        modal.style.display = (modal.style.display === 'none' || modal.style.display === '') ? 'block' : 'none';
+      }
+    }
   </script>
 </head>
 <body>
