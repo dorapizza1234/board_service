@@ -1,0 +1,69 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_IMAGE = "dorapizza/board_service"
+        SERVER_IP = "52.79.125.168"
+        CONTAINER_NAME = "board_service"
+    }
+
+    tools {
+        jdk 'jdk17'
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Build with Gradle') {
+            steps {
+                sh 'chmod +x ./gradlew'
+                sh './gradlew clean build -x test'
+            }
+        }
+
+        stage('Docker Build & Push') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub_info',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    sh '''
+                        echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+                        docker build -t $DOCKER_IMAGE:latest .
+                        docker push $DOCKER_IMAGE:latest
+                    '''
+                }
+            }
+        }
+
+        stage('Deploy to Server') {
+            steps {
+                sshagent(['SERVER_SSH_KEY']) {
+                    sh """
+                        ssh -o StrictHostKeyChecking=no ubuntu@$SERVER_IP '
+                            docker stop $CONTAINER_NAME || true
+                            docker rm $CONTAINER_NAME || true
+                            docker pull $DOCKER_IMAGE:latest
+                            docker run -d --name $CONTAINER_NAME -p 8002:8002 $DOCKER_IMAGE:latest
+                        '
+                    """
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Deployment completed successfully."
+        }
+        failure {
+            echo "Deployment failed."
+        }
+    }
+}
