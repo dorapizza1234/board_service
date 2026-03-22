@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6"
+      th:replace="~{layout/layout_main :: layout(~{::title}, ~{::main})}">
+<head>
+    <title>공지사항 수정</title>
+</head>
+<body>
+<main>
+    <h3 class="mb-4">공지사항 / FAQ 수정</h3>
+    <form id="editForm">
+        <input type="hidden" id="noticeId" name="noticeId" th:value="${notice.noticeId}">
+        <div class="form-group">
+            <label for="noticeType">유형</label>
+            <select class="form-control" id="noticeType" name="noticeType">
+                <option value="NOTICE" th:selected="${notice.noticeType == 'NOTICE'}">공지사항</option>
+                <option value="FAQ" th:selected="${notice.noticeType == 'FAQ'}">FAQ</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="title">제목</label>
+            <input type="text" class="form-control" id="title" name="title"
+                   th:value="${notice.title}" placeholder="제목을 입력하세요" required maxlength="400">
+        </div>
+        <div class="form-group">
+            <label for="content">내용</label>
+            <textarea class="form-control" id="content" name="content"
+                      rows="10" placeholder="내용을 입력하세요" required
+                      th:text="${notice.content}"></textarea>
+        </div>
+        <div class="form-group form-check">
+            <input type="checkbox" class="form-check-input" id="importance" name="importance" value="1"
+                   th:checked="${notice.importance == 1}">
+            <label class="form-check-label" for="importance">중요 공지 (상단 고정)</label>
+        </div>
+        <div class="d-flex justify-content-between">
+            <a th:href="@{/board-service/notice/admin/list}" class="btn btn-secondary">취소</a>
+            <button type="button" class="btn btn-primary" onclick="submitEdit()">저장</button>
+        </div>
+    </form>
+
+    <script>
+    function submitEdit() {
+        const title = document.getElementById('title').value.trim();
+        const content = document.getElementById('content').value.trim();
+        if (!title) { alert('제목을 입력하세요.'); return; }
+        if (!content) { alert('내용을 입력하세요.'); return; }
+
+        const token = localStorage.getItem('accessToken');
+        const formData = new FormData();
+        formData.append('noticeId', document.getElementById('noticeId').value);
+        formData.append('title', title);
+        formData.append('content', content);
+        formData.append('noticeType', document.getElementById('noticeType').value);
+        formData.append('importance', document.getElementById('importance').checked ? '1' : '0');
+
+        fetch('/board-service/notice/edit', {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + token },
+            body: formData
+        })
+        .then(res => res.json())
+        .then(result => {
+            if (result === 1) {
+                alert('수정되었습니다.');
+                window.location.href = '/board-service/notice/admin/list';
+            } else {
+                alert('수정 실패. 다시 시도하세요.');
+            }
+        });
+    }
+    </script>
+</main>
+</body>
+</html>

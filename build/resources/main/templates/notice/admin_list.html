@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6"
+      th:replace="~{layout/layout_main :: layout(~{::title}, ~{::main})}">
+<head>
+    <title>공지사항 관리</title>
+</head>
+<body>
+<main>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3>공지사항 / FAQ 관리</h3>
+        <a th:href="@{/board-service/notice/write}" class="btn btn-primary btn-sm">글쓰기</a>
+    </div>
+
+    <table class="table table-hover table-bordered">
+        <thead class="thead-dark">
+            <tr>
+                <th style="width:80px;">번호</th>
+                <th style="width:80px;">유형</th>
+                <th>제목</th>
+                <th style="width:80px;">중요</th>
+                <th style="width:120px;">작성일</th>
+                <th style="width:80px;">조회수</th>
+                <th style="width:120px;">관리</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:if="${#lists.isEmpty(noticeList)}">
+                <td colspan="7" class="text-center text-muted">등록된 공지사항이 없습니다.</td>
+            </tr>
+            <tr th:each="notice, stat : ${noticeList}"
+                th:class="${notice.importance == 1} ? 'table-warning' : ''">
+                <td th:text="${(currentPage - 1) * 15 + stat.index + 1}"></td>
+                <td>
+                    <span th:if="${notice.noticeType == 'FAQ'}" class="badge badge-info">FAQ</span>
+                    <span th:unless="${notice.noticeType == 'FAQ'}" class="badge badge-secondary">공지</span>
+                </td>
+                <td>
+                    <span th:if="${notice.importance == 1}" class="badge badge-warning mr-1">중요</span>
+                    <a th:href="@{/board-service/notice/view(noticeId=${notice.noticeId})}"
+                       th:text="${notice.title}" class="text-dark"></a>
+                </td>
+                <td class="text-center" th:text="${notice.importance == 1} ? '★' : ''"></td>
+                <td th:text="${notice.createdAt}"></td>
+                <td th:text="${notice.viewCount}"></td>
+                <td class="text-center">
+                    <a th:href="@{/board-service/notice/edit(noticeId=${notice.noticeId})}"
+                       class="btn btn-sm btn-outline-secondary mr-1">수정</a>
+                    <button type="button" class="btn btn-sm btn-outline-danger"
+                            th:data-id="${notice.noticeId}"
+                            onclick="deleteNotice(this)">삭제</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="d-flex justify-content-between align-items-center mt-2 mb-4">
+        <span class="text-muted small">전체 <strong th:text="${totalCount}">0</strong>건</span>
+    </div>
+
+    <!-- 페이징 -->
+    <nav th:if="${totalPages > 1}" aria-label="Admin notice page navigation">
+        <ul class="pagination justify-content-center">
+            <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
+                <a class="page-link" th:href="@{/board-service/notice/admin/list(page=${currentPage-1})}">이전</a>
+            </li>
+            <li class="page-item" th:each="p : ${#numbers.sequence(1, totalPages)}"
+                th:classappend="${p == currentPage} ? 'active'">
+                <a class="page-link" th:href="@{/board-service/notice/admin/list(page=${p})}" th:text="${p}"></a>
+            </li>
+            <li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled'">
+                <a class="page-link" th:href="@{/board-service/notice/admin/list(page=${currentPage+1})}">다음</a>
+            </li>
+        </ul>
+    </nav>
+
+    <script>
+    function deleteNotice(btn) {
+        const noticeId = btn.getAttribute('data-id');
+        if (!confirm('삭제하시겠습니까?')) return;
+        const token = localStorage.getItem('accessToken');
+        fetch('/board-service/notice/delete?noticeId=' + noticeId, {
+            method: 'DELETE',
+            headers: { 'Authorization': 'Bearer ' + token }
+        })
+        .then(res => res.json())
+        .then(result => {
+            if (result === 1) {
+                alert('삭제되었습니다.');
+                location.reload();
+            } else {
+                alert('삭제 실패. 다시 시도하세요.');
+            }
+        });
+    }
+    </script>
+</main>
+</body>
+</html>
