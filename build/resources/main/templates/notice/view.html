@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6"
+      th:replace="~{layout/layout_main :: layout(~{::title}, ~{::main})}">
+<head>
+    <title th:text="${notice.title}">공지사항 상세</title>
+</head>
+<body>
+<main>
+    <div style="max-width:860px; margin:0 auto; padding:40px 16px 80px;">
+
+        <!-- 뒤로가기 -->
+        <a th:href="@{/board-service/notice/list}"
+           style="display:inline-flex; align-items:center; gap:6px; color:#666;
+                  font-size:13px; text-decoration:none; margin-bottom:24px;">
+            <i class="fas fa-arrow-left" style="font-size:12px;"></i> 목록으로
+        </a>
+
+        <!-- 카드 -->
+        <div style="border:1px solid #e8e8e8; border-radius:14px; overflow:hidden;">
+
+            <!-- 헤더 -->
+            <div style="padding:28px 32px 24px; border-bottom:1px solid #e8e8e8; background:#fafafa;">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+                    <span th:if="${notice.noticeType == 'FAQ'}"
+                          style="display:inline-block; background:#3b82f6; color:#fff;
+                                 font-size:11px; font-weight:700; padding:3px 9px; border-radius:4px;">FAQ</span>
+                    <span th:if="${notice.importance == 1}"
+                          style="display:inline-block; background:#f59e0b; color:#fff;
+                                 font-size:11px; font-weight:700; padding:3px 9px; border-radius:4px;">중요</span>
+                </div>
+                <h4 th:text="${notice.title}"
+                    style="margin:0 0 14px; font-size:22px; font-weight:700; color:#111; line-height:1.4;"></h4>
+                <div style="display:flex; gap:20px; font-size:13px; color:#888;">
+                    <span><i class="fas fa-eye" style="margin-right:4px;"></i>조회 <strong th:text="${notice.viewCount}" style="color:#555;"></strong></span>
+                    <span><i class="fas fa-calendar-alt" style="margin-right:4px;"></i><span th:text="${notice.createdAt}"></span></span>
+                </div>
+            </div>
+
+            <!-- 본문 -->
+            <div style="padding:32px; min-height:220px;">
+                <p th:text="${notice.content}"
+                   style="margin:0; white-space:pre-wrap; font-size:15px; color:#333; line-height:1.8;"></p>
+            </div>
+
+            <!-- 푸터 버튼 -->
+            <div style="padding:20px 32px; border-top:1px solid #e8e8e8; background:#fafafa;
+                        display:flex; justify-content:space-between; align-items:center;">
+                <a th:href="@{/board-service/notice/list}"
+                   style="display:inline-block; background:#f1f1f1; color:#444; font-weight:600;
+                          font-size:13px; padding:9px 20px; border-radius:7px; text-decoration:none;">
+                    목록
+                </a>
+                <button type="button"
+                        sec:authorize="hasRole('ADMIN')"
+                        th:onclick="'deleteNotice(' + ${notice.noticeId} + ')'"
+                        style="background:#ef4444; color:#fff; border:none; font-weight:600;
+                               font-size:13px; padding:9px 20px; border-radius:7px; cursor:pointer;">
+                    삭제
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    function deleteNotice(noticeId) {
+        if (!confirm('삭제하시겠습니까?')) return;
+        const token = localStorage.getItem('accessToken');
+        fetch('/board-service/notice/delete?noticeId=' + noticeId, {
+            method: 'DELETE',
+            headers: { 'Authorization': 'Bearer ' + token }
+        })
+        .then(res => res.json())
+        .then(result => {
+            if (result === 1) {
+                alert('삭제되었습니다.');
+                window.location.href = '/board-service/notice/list';
+            } else {
+                alert('삭제 실패');
+            }
+        });
+    }
+    </script>
+</main>
+</body>
+</html>

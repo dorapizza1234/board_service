@@ -1,0 +1,59 @@
+spring:
+  application:
+    name: board_service
+
+  thymeleaf:
+    cache: false
+
+  datasource:
+    driver-class-name: oracle.jdbc.OracleDriver
+    url: jdbc:oracle:thin:@//211.63.89.70:1521/xe
+    username: FINAL_ORAUSER3
+    password: sistsix
+    type: com.zaxxer.hikari.HikariDataSource
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 10
+      idle-timeout: 30000
+      max-lifetime: 1800000
+      connection-timeout: 30000
+
+  jpa:
+    database-platform: org.hibernate.dialect.OracleDialect
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        '[show_sql]': true
+        '[format_sql]': true
+    open-in-view: false
+
+  devtools:
+    livereload:
+      enabled: true
+    restart:
+      enabled: true
+
+logging:
+  level:
+    '[com.spring.app]': debug
+
+server:
+  port: 8002
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+jwt:
+  secret: e37ea07e222779c4066309ce10e47004a9718bbbc8e1062b7b4bca9b5d89a83d
+
+eureka:
+  instance:
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://54.116.1.59:8761/eureka/

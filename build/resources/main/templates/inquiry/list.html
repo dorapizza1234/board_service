@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6"
+      th:replace="~{layout/layout_main :: layout(~{::title}, ~{::main})}">
+<head>
+    <title>1:1 문의 목록</title>
+</head>
+<body>
+<main>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3>내 1:1 문의</h3>
+        <th:block sec:authorize="isAuthenticated()">
+            <a th:href="@{/board-service/inquiry/write}" class="btn btn-primary btn-sm">문의하기</a>
+        </th:block>
+        <th:block sec:authorize="isAnonymous()">
+            <a th:href="@{/finalProject_3/security/login}" class="btn btn-outline-secondary btn-sm">로그인 후 문의하기</a>
+        </th:block>
+    </div>
+
+    <th:block sec:authorize="isAnonymous()">
+        <div class="alert alert-info">
+            로그인 후 문의 목록을 확인할 수 있습니다.
+        </div>
+    </th:block>
+
+    <th:block sec:authorize="isAuthenticated()">
+        <table class="table table-hover table-bordered">
+            <thead class="thead-dark">
+                <tr>
+                    <th style="width:60px;">번호</th>
+                    <th>제목</th>
+                    <th style="width:100px;">상태</th>
+                    <th style="width:120px;">작성일</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:if="${#lists.isEmpty(inquiryList)}">
+                    <td colspan="4" class="text-center text-muted">등록된 문의가 없습니다.</td>
+                </tr>
+                <tr th:each="inquiry, stat : ${inquiryList}">
+                    <td th:text="${stat.index + 1}"></td>
+                    <td>
+                        <a th:href="@{/board-service/inquiry/view(inquiryId=${inquiry.inquiryId})}"
+                           th:text="${inquiry.title}" class="text-dark"></a>
+                    </td>
+                    <td>
+                        <span th:text="${inquiry.inquiryStatus}"
+                              th:class="${inquiry.inquiryStatus == '답변완료'} ? 'badge badge-success' : 'badge badge-secondary'">
+                        </span>
+                    </td>
+                    <td th:text="${inquiry.createdAt}"></td>
+                </tr>
+            </tbody>
+        </table>
+    </th:block>
+</main>
+</body>
+</html>
