@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = "dorapizza/board_service"
-        SERVER_IP = "52.79.125.168"
+        SERVER_IP = "54.116.1.59"
         CONTAINER_NAME = "board_service"
     }
 
